@@ -1,0 +1,2659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusCGL // The Anti-Distraction Prep Engine</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS DESIGN SYSTEM & TOKENS */
+        :root {
+            /* HSL Theme Colors */
+            --bg-base: hsl(222, 25%, 10%);
+            --bg-surface: hsla(222, 25%, 15%, 0.7);
+            --bg-surface-glow: hsla(222, 25%, 20%, 0.8);
+            --border-glow: hsla(222, 25%, 28%, 0.6);
+            --border-highlight: hsla(180, 100%, 50%, 0.3);
+            
+            --color-text-main: hsl(210, 20%, 95%);
+            --color-text-muted: hsl(215, 15%, 65%);
+            
+            /* Accent Colors */
+            --accent-cyan: hsl(180, 100%, 50%);
+            --accent-cyan-hover: hsl(180, 100%, 45%);
+            --accent-violet: hsl(270, 90%, 65%);
+            --accent-violet-hover: hsl(270, 90%, 60%);
+            --accent-gold: hsl(42, 100%, 55%);
+            --accent-danger: hsl(350, 85%, 55%);
+            --accent-success: hsl(145, 80%, 45%);
+            
+            /* Glassmorphism & Shadow Properties */
+            --backdrop-blur: blur(12px);
+            --shadow-neon-cyan: 0 0 20px hsla(180, 100%, 50%, 0.2);
+            --shadow-neon-violet: 0 0 20px hsla(270, 90%, 65%, 0.2);
+            --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            
+            /* Border Radius */
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            
+            /* Fonts */
+            --font-headings: 'Outfit', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        /* RESET & GENERAL STYLES */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-glow) transparent;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(circle at 10% 20%, hsla(270, 90%, 65%, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, hsla(180, 100%, 50%, 0.08) 0%, transparent 45%);
+            background-attachment: fixed;
+            color: var(--color-text-main);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* SCROLLBAR CUSTOMIZATION */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-glow);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-cyan);
+        }
+
+        /* GRID & CONTAINER LAYOUT */
+        .app-container {
+            width: 100%;
+            max-width: 1280px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* HEADER BRANDING */
+        header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-glow);
+        }
+
+        .branding h1 {
+            font-family: var(--font-headings);
+            font-weight: 800;
+            font-size: 2.2rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .branding p {
+            color: var(--color-text-muted);
+            font-size: 0.95rem;
+            margin-top: 0.25rem;
+        }
+
+        /* STREAK & GLOBAL STATS HEADER */
+        .header-stats {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .stat-badge {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-badge:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: var(--shadow-neon-cyan);
+            transform: translateY(-2px);
+        }
+
+        .stat-badge.gold:hover {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 20px hsla(42, 100%, 55%, 0.25);
+        }
+
+        .stat-badge .icon {
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        .stat-badge .text-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-text-muted);
+            font-weight: 600;
+        }
+
+        .stat-badge .stat-val {
+            font-family: var(--font-headings);
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--color-text-main);
+        }
+
+        /* COMMON CARD WRAPPER */
+        .glass-card {
+            background: var(--bg-surface);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-card);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: transparent;
+            transition: background 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: var(--border-highlight);
+        }
+
+        .glass-card.card-timer::before {
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet));
+        }
+
+        .glass-card.card-scratchpad::before {
+            background: linear-gradient(90deg, var(--accent-danger), var(--accent-violet));
+        }
+
+        .glass-card.card-cookie-jar::before {
+            background: linear-gradient(90deg, var(--accent-gold), var(--accent-cyan));
+        }
+
+        .glass-card.card-syllabus::before {
+            background: linear-gradient(90deg, var(--accent-success), var(--accent-cyan));
+        }
+
+        .card-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .card-title {
+            font-family: var(--font-headings);
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-title span.badge-tag {
+            background: var(--border-glow);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            color: var(--color-text-muted);
+            font-family: var(--font-body);
+            font-weight: 500;
+        }
+
+        /* GEAR SETTINGS BUTTON */
+        .settings-toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--color-text-muted);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .settings-toggle-btn:hover {
+            color: var(--accent-cyan);
+            background: hsla(180, 100%, 50%, 0.1);
+            transform: rotate(45deg);
+        }
+
+        /* DYNAMIC TIMER SETTINGS DRAWER */
+        .timer-settings-panel {
+            background: var(--bg-surface-glow);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+            animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .timer-settings-panel.active {
+            display: flex;
+        }
+
+        .settings-form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .settings-form-row label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .settings-form-row input, .settings-form-row select {
+            background: var(--bg-base);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-sm);
+            padding: 0.6rem 0.85rem;
+            color: var(--color-text-main);
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .settings-form-row input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        /* 1. FOCUS SPRINT TIMER MODULE */
+        .timer-module {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .circular-timer {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            margin: 1.5rem 0;
+        }
+
+        .circular-timer svg {
+            width: 240px;
+            height: 240px;
+            transform: rotate(-90deg);
+        }
+
+        .circular-timer circle {
+            fill: none;
+            stroke-width: 12;
+            stroke-linecap: round;
+        }
+
+        .circular-timer .track {
+            stroke: var(--bg-surface-glow);
+        }
+
+        .circular-timer .progress {
+            stroke: var(--accent-cyan);
+            stroke-dasharray: 691.15; /* 2 * PI * r (r=110) */
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 0.25s linear, stroke 0.3s ease;
+        }
+
+        .circular-timer .timer-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 80%;
+        }
+
+        .circular-timer .timer-numbers {
+            font-family: var(--font-headings);
+            font-size: 3.2rem;
+            font-weight: 800;
+            color: var(--color-text-main);
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        .circular-timer .timer-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-text-muted);
+            margin-top: 0.5rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        /* TIMER BUTTONS & PRESETS */
+        .timer-presets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+
+        .preset-btn {
+            background: var(--bg-surface-glow);
+            border: 1px solid var(--border-glow);
+            color: var(--color-text-main);
+            border-radius: var(--radius-sm);
+            padding: 0.6rem 0.25rem;
+            font-family: var(--font-headings);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .preset-btn span.label-time {
+            font-size: 0.9rem;
+            color: var(--accent-cyan);
+        }
+
+        .preset-btn:hover, .preset-btn.active {
+            border-color: var(--accent-cyan);
+            background: hsla(180, 100%, 50%, 0.05);
+            box-shadow: 0 0 10px hsla(180, 100%, 50%, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .preset-btn.active span.label-time {
+            color: var(--color-text-main);
+        }
+
+        .preset-btn.special-pomo {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, hsla(270, 90%, 65%, 0.05), hsla(180, 100%, 50%, 0.05));
+            border-color: hsla(270, 90%, 65%, 0.3);
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            padding: 0.75rem;
+        }
+
+        .preset-btn.special-pomo span.label-time {
+            color: var(--accent-violet);
+        }
+
+        .preset-btn.special-pomo:hover, .preset-btn.special-pomo.active {
+            border-color: var(--accent-violet);
+            background: hsla(270, 90%, 65%, 0.1);
+            box-shadow: var(--shadow-neon-violet);
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .btn {
+            flex: 1;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 1rem 1.5rem;
+            font-family: var(--font-headings);
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-card);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+            color: hsl(222, 25%, 5%);
+            font-weight: 800;
+        }
+
+        .btn-primary:hover {
+            box-shadow: var(--shadow-neon-cyan), var(--shadow-neon-violet);
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .btn-secondary {
+            background: var(--bg-surface-glow);
+            border: 1px solid var(--border-glow);
+            color: var(--color-text-main);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-danger);
+            color: var(--accent-danger);
+            background: hsla(350, 85%, 55%, 0.05);
+            transform: translateY(-2px);
+        }
+
+        /* 2. ACTIVE SCRATCHPAD (DISTRACTION DUMP) */
+        .scratchpad-module {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .instruction-box {
+            background: hsla(350, 85%, 55%, 0.05);
+            border: 1px dashed hsla(350, 85%, 55%, 0.3);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            margin-bottom: 1.25rem;
+        }
+
+        .instruction-box strong {
+            color: var(--accent-danger);
+        }
+
+        .scratchpad-input-area {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .scratchpad-input-area input {
+            flex: 1;
+            background: var(--bg-surface-glow);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-md);
+            padding: 0.85rem 1.25rem;
+            color: var(--color-text-main);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .scratchpad-input-area input:focus {
+            border-color: var(--accent-danger);
+            box-shadow: 0 0 12px hsla(350, 85%, 55%, 0.15);
+        }
+
+        .btn-add-distraction {
+            background: var(--accent-danger);
+            color: var(--color-text-main);
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 0 1.25rem;
+            font-weight: 700;
+            font-family: var(--font-headings);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-add-distraction:hover {
+            box-shadow: 0 0 15px hsla(350, 85%, 55%, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* CAPTURED DISTRACTION LIST */
+        .captured-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-md);
+            background: var(--bg-surface-glow);
+            padding: 1rem;
+            min-height: 180px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        .captured-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-glow);
+        }
+
+        .status-badge {
+            background: var(--accent-danger);
+            color: var(--color-text-main);
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .status-badge.unlocked {
+            background: var(--accent-success);
+        }
+
+        .distraction-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .distraction-item {
+            background: hsla(222, 25%, 10%, 0.5);
+            border: 1px solid var(--border-glow);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .distraction-item.locked {
+            filter: blur(2.5px);
+            opacity: 0.6;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .distraction-item button.clear-item-btn {
+            background: transparent;
+            border: none;
+            color: var(--accent-danger);
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: background 0.2s ease;
+        }
+
+        .distraction-item button.clear-item-btn:hover {
+            background: hsla(350, 85%, 55%, 0.15);
+        }
+
+        .distraction-placeholder {
+            margin: auto;
+            text-align: center;
+            color: var(--color-text-muted);
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        /* 3. DIGITAL COOKIE JAR & VICTORY BROWSER */
+        .cookie-jar-module {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .cookie-jar-main-row {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 1.5rem;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 480px) {
+            .cookie-jar-main-row {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+        }
+
+        .cookie-jar-illustration {
+            width: 110px;
+            height: 110px;
+            margin: 0 auto;
+            background: radial-gradient(circle, hsla(42, 100%, 55%, 0.1) 0%, transparent 70%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .cookie-jar-illustration svg {
+            width: 64px;
+            height: 64px;
+            fill: var(--accent-gold);
+            filter: drop-shadow(0 0 15px hsla(42, 100%, 55%, 0.4));
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .cookie-jar-illustration:hover svg {
+            transform: scale(1.15) rotate(15deg);
+        }
+
+        .cookie-jar-description {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            text-align: left;
+        }
+
+        .cookie-jar-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+
+        /* SCROLLABLE TRIUMPH LIST MANAGER */
+        .victory-manager-container {
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-md);
+            background: var(--bg-surface-glow);
+            padding: 1rem;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .victory-manager-title {
+            font-size: 0.8rem;
+            color: var(--accent-gold);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-glow);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .victory-manager-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .victory-manager-item {
+            background: hsla(222, 25%, 10%, 0.4);
+            border: 1px solid var(--border-glow);
+            padding: 0.6rem 0.85rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .victory-manager-item span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+
+        .victory-manager-item button.delete-victory-btn {
+            background: transparent;
+            border: none;
+            color: var(--accent-danger);
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            line-height: 1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: background 0.2s ease;
+        }
+
+        .victory-manager-item button.delete-victory-btn:hover {
+            background: hsla(350, 85%, 55%, 0.15);
+        }
+
+        /* 4. ATOMIC HABITS & CHECKLIST */
+        .checklist-module {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .habit-incrementer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-surface-glow);
+            border: 1px solid var(--border-glow);
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-md);
+        }
+
+        .incrementer-title {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .incrementer-title span.title-text {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .incrementer-title span.sub-text {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        .incrementer-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .inc-btn {
+            background: var(--border-glow);
+            color: var(--color-text-main);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .inc-btn:hover {
+            background: var(--accent-cyan);
+            color: hsl(222, 25%, 10%);
+        }
+
+        .counter-val {
+            font-family: var(--font-headings);
+            font-weight: 700;
+            font-size: 1.3rem;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        /* TIMELINE BLOCK CHECKLIST */
+        .timeline-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .timeline-block {
+            background: var(--bg-surface-glow);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .timeline-block:hover {
+            border-color: var(--border-highlight);
+            transform: translateX(4px);
+        }
+
+        .timeline-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border-glow);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            position: relative;
+            background: transparent;
+        }
+
+        .timeline-block.completed .timeline-checkbox {
+            background: var(--accent-success);
+            border-color: var(--accent-success);
+        }
+
+        .timeline-block.completed .timeline-checkbox::after {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 10px;
+            border: solid var(--bg-base);
+            border-width: 0 2.5px 2.5px 0;
+            transform: rotate(45deg);
+            top: 2px;
+            left: 6px;
+        }
+
+        .timeline-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .timeline-time-tag {
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .timeline-name {
+            font-family: var(--font-headings);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .timeline-desc {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            margin-top: 2px;
+        }
+
+        .timeline-block.completed .timeline-name {
+            text-decoration: line-through;
+            color: var(--color-text-muted);
+        }
+
+        /* 5. SYLLABUS ACCORDION TRACKER */
+        .syllabus-module {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .syllabus-search {
+            width: 100%;
+            background: var(--bg-surface-glow);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1.25rem;
+            color: var(--color-text-main);
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+        }
+
+        .syllabus-tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-glow);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--color-text-muted);
+            font-family: var(--font-headings);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-cyan);
+            background: hsla(180, 100%, 50%, 0.05);
+        }
+
+        .syllabus-list {
+            max-height: 380px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding-right: 4px;
+        }
+
+        /* ACCORDION ROOT STYLING */
+        .accordion-item {
+            background: var(--bg-surface-glow);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: border-color 0.2s ease;
+            flex-shrink: 0; /* Prevent compression in flexbox layouts */
+        }
+
+        .accordion-item.active-filter {
+            border-color: var(--border-highlight);
+        }
+
+        .accordion-header {
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            user-select: none;
+            transition: background 0.2s ease;
+        }
+
+        .accordion-header:hover {
+            background: hsla(222, 25%, 22%, 0.5);
+        }
+
+        .parent-checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            z-index: 10;
+        }
+
+        .parent-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-glow);
+            border-radius: 6px;
+            position: relative;
+            background: transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .parent-checkbox.completed {
+            background: var(--accent-success);
+            border-color: var(--accent-success);
+        }
+
+        .parent-checkbox.completed::after {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 10px;
+            border: solid var(--bg-base);
+            border-width: 0 2.5px 2.5px 0;
+            transform: rotate(45deg);
+            top: 2px;
+            left: 6px;
+        }
+
+        .accordion-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            padding-right: 1rem;
+        }
+
+        .accordion-topic-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: var(--font-headings);
+        }
+
+        /* ACCORDION TOPIC PROGRESS METERS */
+        .accordion-progress-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .accordion-progress-bar-bg {
+            background: var(--bg-base);
+            height: 5px;
+            border-radius: 4px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .accordion-progress-bar-fill {
+            background: var(--accent-success);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .accordion-progress-text {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            min-width: 48px;
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .accordion-chevron {
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-item.expanded .accordion-chevron {
+            transform: rotate(180deg);
+        }
+
+        /* ACCORDION CONTENT PANEL */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: hsla(222, 25%, 8%, 0.3);
+            border-top: 0 solid var(--border-glow);
+        }
+
+        .accordion-item.expanded .accordion-content {
+            border-top-width: 1px;
+            max-height: 500px; /* high limit to fit content */
+            overflow-y: auto;
+        }
+
+        .subtopic-list {
+            list-style: none;
+            padding: 1rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .subtopic-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .subtopic-item:hover {
+            transform: translateX(2px);
+        }
+
+        .subtopic-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border-glow);
+            border-radius: 4px;
+            position: relative;
+            background: transparent;
+            transition: all 0.2s ease;
+        }
+
+        .subtopic-item.completed .subtopic-checkbox {
+            background: var(--accent-success);
+            border-color: var(--accent-success);
+        }
+
+        .subtopic-item.completed .subtopic-checkbox::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 8px;
+            border: solid var(--bg-base);
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            top: 1px;
+            left: 5px;
+        }
+
+        .subtopic-text {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .subtopic-item.completed .subtopic-text {
+            color: var(--color-text-muted);
+            text-decoration: line-through;
+        }
+
+        /* COOKIE JAR MODAL POPUP */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--bg-surface);
+            border: 1px solid var(--accent-gold);
+            box-shadow: 0 0 40px hsla(42, 100%, 55%, 0.15);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 500px;
+            padding: 2.5rem;
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            border: none;
+            color: var(--color-text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--accent-gold);
+        }
+
+        .cookie-victory-card {
+            background: linear-gradient(135deg, hsla(42, 100%, 55%, 0.05), hsla(270, 90%, 65%, 0.05));
+            border: 1px dashed var(--accent-gold);
+            padding: 2rem 1.5rem;
+            border-radius: var(--radius-md);
+            margin: 1.5rem 0;
+            animation: cardSpin 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .cookie-goggins-quote {
+            font-family: var(--font-headings);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .cookie-victory-text {
+            font-size: 1.05rem;
+            color: var(--color-text-main);
+            font-weight: 500;
+        }
+
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: left;
+            margin-top: 1rem;
+        }
+
+        .form-row label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-row input {
+            background: var(--bg-surface-glow);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1rem;
+            color: var(--color-text-main);
+            font-family: var(--font-body);
+        }
+
+        .form-row input:focus {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 12px hsla(42, 100%, 55%, 0.15);
+        }
+
+        /* KEYFRAME ANIMATIONS */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes cardSpin {
+            0% {
+                transform: scale(0.8) rotate(-5deg);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        /* CONGRATS ANIMATION overlay */
+        .congrats-flash {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-surface);
+            border: 2px solid var(--accent-cyan);
+            border-radius: var(--radius-lg);
+            padding: 3rem;
+            z-index: 1000;
+            box-shadow: var(--shadow-neon-cyan);
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .congrats-flash.active {
+            opacity: 1;
+            animation: popOut 3s forwards;
+        }
+
+        @keyframes popOut {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 1;
+            }
+            20% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            80% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0.9);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- HEADER -->
+        <header>
+            <div class="branding">
+                <h1>FocusCGL</h1>
+                <p>An Anti-Distraction Engine built for SSC CGL Aspirants</p>
+            </div>
+            <div class="header-stats">
+                <div class="stat-badge gold">
+                    <span class="icon">🔥</span>
+                    <div>
+                        <div class="text-label">Habit Streak</div>
+                        <div class="stat-val" id="streak-count">0 Days</div>
+                    </div>
+                </div>
+                <div class="stat-badge">
+                    <span class="icon">✨</span>
+                    <div>
+                        <div class="text-label">Total PYQs</div>
+                        <div class="stat-val" id="total-questions-solved">0</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- LEFT COLUMN: SPRINT TIMER & ATOMIC HABITS CHECKLIST -->
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
+            
+            <!-- FOCUS SPRINT TIMER -->
+            <div class="glass-card card-timer">
+                <div class="card-title-row">
+                    <div class="card-title">
+                        ⏱️ Sectional Focus Sprint
+                        <span class="badge-tag" id="timer-status-tag">READY</span>
+                    </div>
+                    <button class="settings-toggle-btn" title="Customize Timer Settings" onclick="toggleTimerSettings()">
+                        ⚙️
+                    </button>
+                </div>
+
+                <!-- TIMER DYNAMIC CONFIG PANEL -->
+                <div class="timer-settings-panel" id="timer-settings-panel">
+                    <h3 style="font-family: var(--font-headings); font-size: 1rem; color: var(--accent-cyan);">⚙️ Custom Sprint Setup</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                        <div class="settings-form-row">
+                            <label for="custom-timer-duration">Duration (Mins)</label>
+                            <input type="number" id="custom-timer-duration" min="1" max="180" value="15">
+                        </div>
+                        <div class="settings-form-row">
+                            <label for="custom-timer-subject">Subject/Topic</label>
+                            <input type="text" id="custom-timer-subject" placeholder="e.g. Algebra Practice" value="Reasoning">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="padding: 0.6rem 1rem; font-size: 0.85rem; border-radius: var(--radius-sm);" onclick="applyCustomTimerSettings()">
+                        APPLY SETTINGS
+                    </button>
+                </div>
+                
+                <div class="timer-module">
+                    <div class="timer-presets">
+                        <button class="preset-btn active" data-time="15" data-subject="Reasoning">
+                            <span>Reasoning</span>
+                            <span class="label-time">15m</span>
+                        </button>
+                        <button class="preset-btn" data-time="15" data-subject="Quantitative Aptitude">
+                            <span>Math</span>
+                            <span class="label-time">15m</span>
+                        </button>
+                        <button class="preset-btn" data-time="15" data-subject="General Awareness">
+                            <span>G.A.</span>
+                            <span class="label-time">15m</span>
+                        </button>
+                        <button class="preset-btn" data-time="15" data-subject="English">
+                            <span>English</span>
+                            <span class="label-time">15m</span>
+                        </button>
+                        <button class="preset-btn special-pomo" data-time="20" data-subject="Atomic micro-sprint">
+                            ⏱️ <span>Atomic Micro-Sprint</span>
+                            <span class="label-time">20m</span>
+                        </button>
+                    </div>
+
+                    <div class="circular-timer">
+                        <svg>
+                            <circle class="track" cx="120" cy="120" r="110"></circle>
+                            <circle class="progress" id="timer-ring" cx="120" cy="120" r="110"></circle>
+                        </svg>
+                        <div class="timer-display">
+                            <div class="timer-numbers" id="time-left">15:00</div>
+                            <div class="timer-label" id="current-subject-label">Reasoning</div>
+                        </div>
+                    </div>
+
+                    <div class="timer-controls">
+                        <button class="btn btn-primary" id="btn-timer-start-pause">START SPRINT</button>
+                        <button class="btn btn-secondary" id="btn-timer-reset">ABANDON</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ATOMIC HABITS & CHECKLIST -->
+            <div class="glass-card">
+                <div class="card-title">⚡ Daily Atomic Habit Tracker</div>
+                
+                <div class="checklist-module">
+                    <!-- The Two-Minute Rule Active Incrementor -->
+                    <div class="habit-incrementer">
+                        <div class="incrementer-title">
+                            <span class="title-text">Two-Minute Rule: PYQs Solved</span>
+                            <span class="sub-text">Break the friction: solve at least 1 today.</span>
+                        </div>
+                        <div class="incrementer-controls">
+                            <button class="inc-btn" onclick="adjustQuestions(-5)">-5</button>
+                            <button class="inc-btn" onclick="adjustQuestions(-1)">-1</button>
+                            <span class="counter-val" id="today-questions-solved">0</span>
+                            <button class="inc-btn" onclick="adjustQuestions(1)">+1</button>
+                            <button class="inc-btn" onclick="adjustQuestions(5)">+5</button>
+                        </div>
+                    </div>
+
+                    <!-- Visual Routine Checklist -->
+                    <div class="timeline-container">
+                        <div class="timeline-block" onclick="toggleBlock(this, 'block-morning')">
+                            <div class="timeline-checkbox"></div>
+                            <div class="timeline-info">
+                                <span class="timeline-time-tag">Block 1 // 08:30 - 09:30 AM</span>
+                                <span class="timeline-name">Morning Confidence Sprint</span>
+                                <span class="timeline-desc">English Vocabulary Recall (20m) & Reasoning (15m Sectional)</span>
+                            </div>
+                        </div>
+                        <div class="timeline-block" onclick="toggleBlock(this, 'block-afternoon')">
+                            <div class="timeline-checkbox"></div>
+                            <div class="timeline-info">
+                                <span class="timeline-time-tag">Block 2 // 11:30 - 12:30 PM</span>
+                                <span class="timeline-name">Afternoon Kinesthetic Engine</span>
+                                <span class="timeline-desc">Math Pen-and-Paper Formulas & Topic drills (Active writing)</span>
+                            </div>
+                        </div>
+                        <div class="timeline-block" onclick="toggleBlock(this, 'block-evening')">
+                            <div class="timeline-checkbox"></div>
+                            <div class="timeline-info">
+                                <span class="timeline-time-tag">Block 3 // 04:30 - 05:30 PM</span>
+                                <span class="timeline-name">Evening Storyline Input</span>
+                                <span class="timeline-desc">General Awareness animated/visual lectures & PYQs check</span>
+                            </div>
+                        </div>
+                        <div class="timeline-block" onclick="toggleBlock(this, 'block-night')">
+                            <div class="timeline-checkbox"></div>
+                            <div class="timeline-info">
+                                <span class="timeline-time-tag">Block 4 // 09:00 - 10:15 PM</span>
+                                <span class="timeline-name">Night Mock Gamification</span>
+                                <span class="timeline-desc">Complete 1-Hour CBE Mock Test & write Top 3 errors in Error Log</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: SCRATCHPAD, SYLLABUS, COOKIE JAR -->
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
+            
+            <!-- THE ACTIVE SCRATCHPAD (DISTRACTION LOCKER) -->
+            <div class="glass-card card-scratchpad">
+                <div class="card-title">
+                    📝 Active Scratchpad
+                    <span class="badge-tag" id="scratchpad-tag">NO ACTIVE SPRINT</span>
+                </div>
+                
+                <div class="scratchpad-module">
+                    <div class="instruction-box">
+                        <strong>Brain-dump intrusive thoughts instantly:</strong> Did a movie idea, message urge, or chore pop into your head? Type it below and hit Enter. It will be captured and <strong>locked</strong> until your Focus Sprint is fully complete.
+                    </div>
+                    
+                    <div class="scratchpad-input-area">
+                        <input type="text" id="scratchpad-input" placeholder="Type distraction and hit Enter..." onkeypress="handleScratchpadKey(event)">
+                        <button class="btn-add-distraction" onclick="captureDistraction()">DUMP</button>
+                    </div>
+
+                    <div class="captured-container">
+                        <div class="captured-header">
+                            <span>Captured Thoughts</span>
+                            <span class="status-badge" id="scratchpad-status">Unlocked</span>
+                        </div>
+                        <ul class="distraction-list" id="distraction-list-items">
+                            <!-- Populated by JS -->
+                        </ul>
+                        <div class="distraction-placeholder" id="distraction-placeholder">
+                            <span>🧘 Your mind is completely clear.</span>
+                            <span style="font-size: 0.75rem;">Intrusive thoughts will appear here once dumped.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GOGGINS MOTIVATIONAL COOKIE JAR -->
+            <div class="glass-card card-cookie-jar">
+                <div class="card-title">🍪 Goggins-Style Cookie Jar</div>
+                
+                <div class="cookie-jar-module">
+                    <div class="cookie-jar-main-row">
+                        <div class="cookie-jar-illustration">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2m0 2a8 8 0 0 1 8 8 8 8 0 0 1-8 8 8 8 0 0 1-8-8 8 8 0 0 1 8-8m-3 3a1.5 1.5 0 0 0-1.5 1.5A1.5 1.5 0 0 0 9 10a1.5 1.5 0 0 0 1.5-1.5A1.5 1.5 0 0 0 9 7m6 0a1.5 1.5 0 0 0-1.5 1.5 1.5 1.5 0 0 0 1.5 1.5 1.5 1.5 0 0 0 1.5-1.5A1.5 1.5 0 0 0 15 7m-3 6a3 3 0 0 0-3 3h6a3 3 0 0 0-3-3z"/>
+                            </svg>
+                        </div>
+                        <div class="cookie-jar-description">
+                            When you hit a mental wall, get frustrated by a question, or want to quit, reach into the cookie jar to consume a random hard victory from your past.
+                        </div>
+                    </div>
+                    
+                    <div class="cookie-jar-controls">
+                        <button class="btn btn-gold" onclick="openCookieJar()">REACH INTO COOKIE JAR</button>
+                        <button class="btn btn-secondary" onclick="openAddVictoryModal()">ADD A WINNING RECORD</button>
+                    </div>
+
+                    <!-- BROWSE ALL VICTORY RECORDS LIST -->
+                    <div class="victory-manager-container">
+                        <div class="victory-manager-title">
+                            <span>📜 Browse Your Triumph Jar</span>
+                            <span id="victory-records-count" style="color: var(--color-text-muted); font-size: 0.75rem;">(0 wins)</span>
+                        </div>
+                        <ul class="victory-manager-list" id="victory-manager-list-items">
+                            <!-- Populated by JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CGL SYLLABUS ACCORDION CHECKLIST -->
+            <div class="glass-card card-syllabus">
+                <div class="card-title">🎯 CGL Core Syllabus Map</div>
+                
+                <div class="syllabus-module">
+                    <input type="text" class="syllabus-search" id="syllabus-search-input" placeholder="Search syllabus topics & subtopics..." oninput="filterSyllabus()">
+                    
+                    <div class="syllabus-tabs">
+                        <button class="tab-btn active" onclick="switchSyllabusTab('Reasoning')">Reasoning</button>
+                        <button class="tab-btn" onclick="switchSyllabusTab('Quantitative Aptitude')">Math (Quant)</button>
+                        <button class="tab-btn" onclick="switchSyllabusTab('English')">English</button>
+                        <button class="tab-btn" onclick="switchSyllabusTab('General Awareness')">G.A.</button>
+                    </div>
+
+                    <div class="syllabus-list" id="syllabus-items-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONGRATULATIONS MODAL FLASH -->
+    <div class="congrats-flash" id="congrats-card">
+        <h2 style="font-family: var(--font-headings); font-size: 2rem; color: var(--accent-cyan); margin-bottom: 0.5rem;">🔥 SPRINT COMPLETE!</h2>
+        <p style="font-size: 1.1rem; margin-bottom: 1.5rem;" id="congrats-msg">You conquered 15 minutes of pure focus.</p>
+        <div style="font-size: 0.85rem; color: var(--color-text-muted);">
+            🔓 Your Active Scratchpad distractions are now unlocked. Review them and delete what doesn't matter.
+        </div>
+    </div>
+
+    <!-- COOKIE JAR OVERLAY MODAL -->
+    <div class="modal-overlay" id="cookie-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeCookieModal()">&times;</button>
+            <h2 style="font-family: var(--font-headings); font-size: 1.6rem; color: var(--accent-gold); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                🍪 Reaching into the Cookie Jar...
+            </h2>
+            <p style="color: var(--color-text-muted); font-size: 0.85rem; margin-top: 0.25rem;">Remind your brain who you really are.</p>
+            
+            <div class="cookie-victory-card">
+                <div class="cookie-goggins-quote" id="goggins-quote">"THEY DON'T KNOW YOU, SON!"</div>
+                <div class="cookie-victory-text" id="victory-text">You survived the tough 1-hour mocks even when your brain was begging to quit.</div>
+            </div>
+            
+            <button class="btn btn-gold" style="width: 100%;" onclick="closeCookieModal()">I AM READY TO GO BACK TO BATTLE</button>
+        </div>
+    </div>
+
+    <!-- ADD VICTORY OVERLAY MODAL -->
+    <div class="modal-overlay" id="add-victory-modal">
+        <div class="modal-content" style="border-color: var(--accent-cyan); text-align: left;">
+            <button class="modal-close" onclick="closeAddVictoryModal()">&times;</button>
+            <h2 style="font-family: var(--font-headings); font-size: 1.6rem; color: var(--accent-cyan); text-align: center;">
+                ⚡ Record a Battle Victory
+            </h2>
+            <p style="color: var(--color-text-muted); font-size: 0.85rem; margin-top: 0.25rem; text-align: center; margin-bottom: 1.5rem;">
+                Store a hard achievement in your Cookie Jar to eat when you are weak.
+            </p>
+            
+            <div class="form-row">
+                <label for="input-victory-desc">What is your victory?</label>
+                <input type="text" id="input-victory-desc" placeholder="e.g. Solved 30 Quant questions in one go today without checking my phone.">
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;" onclick="saveNewVictory()">LOCK IT IN THE JAR</button>
+        </div>
+    </div>
+
+    <script>
+        /* APPLICATION DATA STATE & BUSINESS LOGIC */
+        
+        // UPGRADED NESTED SYLLABUS DATASET (MAJOR TOPICS -> SUBTOPICS)
+        const SYLLABUS_DATA = {
+            'Reasoning': {
+                "Analogy & Verbal Classification": ["Number Analogies", "Letter/Word Associations", "Odd One Out (Words)", "Odd One Out (Numbers)"],
+                "Coding-Decoding": ["Letter to Letter Shifting", "Number to Symbol Substitution", "Sentence/Message Deciphering", "Mathematical Coded Rules"],
+                "Series Completion": ["Arithmetic Number Progressions", "Geometric Number Series", "Alphanumeric Series Patterns", "Continuous Letter Repeating Series"],
+                "Blood Relations": ["Family Tree Diagrams", "Coded Blood Relations", "Pointing/Introductory Problems"],
+                "Direction Sense Test": ["Compass Movements", "Distance & Shortest Path (Pythagoras)", "Shadow-Based Directions", "Degree & Angular Turns"],
+                "Venn Diagrams & Syllogism": ["Venn Diagrams (3 Circle Intersect)", "Syllogism (All/Some/No)", "Possibility Statements & Deductions"],
+                "Puzzles & Operators": ["Mathematical Operations (+ - * /)", "Linear Seating Arrangements", "Circular Seating Arrangements", "Ranking & Order Placement Problems"],
+                "Non-Verbal Reasoning": ["Paper Folding & Cutting", "Mirror & Water Images", "Embedded/Hidden Figures", "Incomplete Pattern Completion"],
+                "Critical & Analytical Reasoning": ["Statement & Assumptions", "Statement & Conclusions", "Course of Action Decisions", "Cause & Effect Relationships"]
+            },
+            'Quantitative Aptitude': {
+                "Percentages, Fractions & Decimals": ["Percentage Basics", "Fraction to Percentage Table", "Successive Percentage Changes", "Election & Voting Problems", "Income, Expenditure & Savings"],
+                "Ratio, Proportion & Partnering": ["Basic Ratios & Proportions", "Mean/Third/Fourth Proportional", "Coin Value Problems", "Partnership & Profit Sharing", "Ages Problems"],
+                "Average & Interest": ["Weighted Average & Groups", "Simple Interest (SI) Formulas", "Compound Interest (CI) Calculations", "CI-SI Differences (2 & 3 Years)", "Installment Calculations"],
+                "Profit, Loss & Discount": ["Marked Price & Discount Ratio", "Disinterested / Dishonest Shopkeeper Cheat", "Successive Discounts", "Equivalent Discount Formulas", "Article-Based CP & SP Tricks"],
+                "Mixture & Alligation": ["Two-Fluid Replacements", "Alligation Cross Method", "Repetitive Replacement Formulas"],
+                "Time & Work, Pipes & Cisterns": ["Efficiency Ratios", "Alternate Day Work Schedules", "Pipes Filling & Leakage", "Wages Distribution"],
+                "Speed, Time & Distance": ["Relative Speed Concepts", "Trains Crossing Platforms/Trains", "Boats and Streams Speed", "Circular Track Races", "Escalator Movement Problems"],
+                "Algebra & Surds": ["Linear & Quadratic Equations", "Standard Algebraic Identities", "Indices & Surds Simplification", "Roots of Quadratic Equations"],
+                "Geometry": ["Triangle Properties & Congruence", "Circle Theorems (Chords, Tangents)", "Angles in Regular Polygons", "Similar Triangles Properties"],
+                "Trigonometry & Mensuration": ["Trigonometric Ratios & Identities", "Heights & Distances (Shadows)", "2D Areas (Triangles, Circles)", "3D Volumes (Prisms, Cones, Cylinders)"]
+            },
+            'English': {
+                "Spotting Errors": ["Subject-Verb Agreement Rules", "Tenses & Conditionals", "Preposition Usage Errors", "Pronoun Case Errors", "Article Placement (A, An, The)"],
+                "Sentence Improvement": ["Phrasal Verbs Accuracy", "Modifier Placement Rules", "Parallel Structure Integrity", "Redundancy Detection"],
+                "Vocabulary Drill": ["Synonyms (High Frequency)", "Antonyms (High Frequency)", "Spelling Mistakes Detection"],
+                "One-Word Substitution": ["Government Systems Vocabulary", "Phobias & Manias", "Personalities & Professional Words"],
+                "Idioms & Phrases": ["Verb-Based Idioms", "Color-Based Idioms", "Animal-Based Idioms"],
+                "Active/Passive Voice": ["Tense Conversion Rules", "Imperative Sentence Passive", "Interrogative Sentence Passive"],
+                "Direct/Indirect Narration": ["Reporting Verb Tense Conversion", "Pronoun Shift Rules", "Time & Place Indicator Shifts"],
+                "Reading Comprehension & Cloze": ["Cloze Test Strategies", "Reading Speed Drills", "Para Jumbles Logical Alignment"]
+            },
+            'General Awareness': {
+                "History of India": ["Ancient India (Harappa, Buddhism, Maurya)", "Medieval India (Mughals, Delhi Sultanate)", "Modern India (1857 Revolt, Gandhi Era, Congress)"],
+                "Geography & Ecology": ["Indian Rivers & Tributaries", "Soil Types & Agriculture", "Atmospheric Layers & Climate", "National Parks & Biosphere Reserves"],
+                "Indian Polity": ["Important Articles (1-395)", "Parts & Schedules of Constitution", "President, Parliament & Judiciary Structure", "Constitutional Amendments"],
+                "Basic Economics": ["Inflation, GDP & National Income", "Monetary Policy & RBI Roles", "Demand and Supply Curves", "Five-Year Plans History"],
+                "General Sciences": ["Physics Laws, Units & Dimensions", "Chemistry Common Compounds & Elements", "Biology Human Systems & Diseases", "Nutrition & Vitamins G.K."],
+                "Computer Basics": ["Hardware Components & Memory Types", "MS Excel & MS Word Keyboard Shortcuts", "Basics of Cyber Security & Internet Protocols"],
+                "Static GK & Current Affairs": ["Folk & Classical Dances of India", "National Festivals & Temples", "Awards & Honours (Current & Past)", "Government Welfare Schemes"]
+            }
+        };
+
+        // GOGGINS QUOTES FOR HIGH ADRENALINE MOTIVATION
+        const GOGGINS_QUOTES = [
+            "\"THEY DON'T KNOW YOU, SON!\"",
+            "\"YOU ARE IN CONTROL OF YOUR MIND. NO ONE ELSE.\"",
+            "\"DON'T STOP WHEN YOU ARE TIRED. STOP WHEN YOU ARE DONE.\"",
+            "\"WHO'S GONNA CARRY THE BOATS? AND THE LOGS?\"",
+            "\"ROGER THAT. STAY HARD!\"",
+            "\"WHEN WORK IS HARD, COWARDS SEEK AN EASY OUT. ARE YOU A COWARD?\"",
+            "\"IT'S NOT ABOUT WILLPOWER. IT'S ABOUT SELF-DISCIPLINE.\""
+        ];
+
+        // LOCAL STORAGE STATE PROPERTIES
+        let appState = {
+            streakCount: 0,
+            totalSolved: 0,
+            todaySolved: 0,
+            lastDateChecked: "",
+            completedTimelineBlocks: [],
+            completedSyllabusItems: [], // Now stores checked nested subtopics e.g. "Percentages, Fractions & Decimals::Percentage Basics"
+            distractionsList: [],
+            cookieJarVictories: [
+                "Solved a hard geometry question without opening YouTube.",
+                "Completed 1 complete mock test under 60 minutes with full focus.",
+                "Ignored a group message notification and kept studying vocabulary.",
+                "Smashed 20 previous year questions in reasoning back-to-back."
+            ]
+        };
+
+        // RUNTIME STATE
+        let timerInterval = null;
+        let timeRemaining = 900; // default 15 mins in seconds
+        let timerDuration = 900;
+        let isTimerRunning = false;
+        let activeSubject = "Reasoning";
+        let activeSyllabusTab = "Reasoning";
+        let startTime = null;
+        let timeRemainingBeforeStart = 900;
+
+        // APP INITIALIZER
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStateFromStorage();
+            initTabs();
+            renderTimelineChecklist();
+            renderSyllabus();
+            renderDistractionList();
+            setupTimerPresetButtons();
+            renderVictoryManagerList();
+            
+            // Start updating UI elements
+            updateStatsUI();
+            updateTimerDisplay();
+            
+            // Check for day reset to manage streak consistency
+            checkDayReset();
+        });
+
+        // 1. STATE & STORAGE MANAGEMENT
+        function loadStateFromStorage() {
+            const savedState = localStorage.getItem('focus_cgl_state');
+            if (savedState) {
+                try {
+                    const parsed = JSON.parse(savedState);
+                    appState = { ...appState, ...parsed };
+                } catch (e) {
+                    console.error("Storage loading error, using defaults", e);
+                }
+            }
+            migrateSyllabusState();
+        }
+
+        function migrateSyllabusState() {
+            const migratedItems = [];
+            let needsSave = false;
+            
+            appState.completedSyllabusItems.forEach(item => {
+                // If it doesn't contain "::", it's an old flat topic name!
+                if (!item.includes('::')) {
+                    needsSave = true;
+                    // Find which subject this topic belongs to
+                    for (const [subjectKey, subjectData] of Object.entries(SYLLABUS_DATA)) {
+                        if (subjectData[item]) {
+                            // Yes, this is the topic! Mark all its subtopics as completed
+                            subjectData[item].forEach(sub => {
+                                const uniqueId = `${subjectKey}::${item}::${sub}`;
+                                if (!migratedItems.includes(uniqueId)) {
+                                    migratedItems.push(uniqueId);
+                                }
+                            });
+                        }
+                    }
+                } else {
+                    migratedItems.push(item);
+                }
+            });
+            
+            if (needsSave) {
+                appState.completedSyllabusItems = migratedItems;
+                saveStateToStorage();
+            }
+        }
+
+        function saveStateToStorage() {
+            localStorage.setItem('focus_cgl_state', JSON.stringify(appState));
+        }
+
+        function checkDayReset() {
+            const todayStr = new Date().toDateString();
+            if (appState.lastDateChecked !== todayStr) {
+                // If it's a new day, check if streak should be maintained
+                const yesterdayStr = new Date(Date.now() - 86400000).toDateString();
+                
+                // If they completed at least 1 PYQ yesterday or finished blocks, keep streak, else reset
+                if (appState.lastDateChecked === yesterdayStr && appState.todaySolved > 0) {
+                    // Maintain streak
+                } else if (appState.lastDateChecked !== "" && appState.lastDateChecked !== yesterdayStr) {
+                    // Reset streak if more than 1 day skipped
+                    appState.streakCount = 0;
+                }
+                
+                // Reset daily variables
+                appState.todaySolved = 0;
+                appState.completedTimelineBlocks = [];
+                appState.lastDateChecked = todayStr;
+                saveStateToStorage();
+                
+                // Re-render
+                renderTimelineChecklist();
+                updateStatsUI();
+            }
+        }
+
+        function updateStatsUI() {
+            document.getElementById('streak-count').textContent = `${appState.streakCount} Days`;
+            document.getElementById('total-questions-solved').textContent = appState.totalSolved;
+            document.getElementById('today-questions-solved').textContent = appState.todaySolved;
+            document.getElementById('victory-records-count').textContent = `(${appState.cookieJarVictories.length} victories)`;
+        }
+
+        // 2. TIMELINE CHECKLIST LOGIC
+        function renderTimelineChecklist() {
+            const timelineBlocks = document.querySelectorAll('.timeline-block');
+            const blockIds = ['block-morning', 'block-afternoon', 'block-evening', 'block-night'];
+            
+            timelineBlocks.forEach((block, idx) => {
+                const id = blockIds[idx];
+                if (appState.completedTimelineBlocks.includes(id)) {
+                    block.classList.add('completed');
+                } else {
+                    block.classList.remove('completed');
+                }
+            });
+        }
+
+        function toggleBlock(element, blockId) {
+            const isCompleted = element.classList.toggle('completed');
+            if (isCompleted) {
+                if (!appState.completedTimelineBlocks.includes(blockId)) {
+                    appState.completedTimelineBlocks.push(blockId);
+                }
+                
+                // If completing a block, give small streak check
+                if (appState.streakCount === 0) {
+                    appState.streakCount = 1;
+                }
+            } else {
+                appState.completedTimelineBlocks = appState.completedTimelineBlocks.filter(id => id !== blockId);
+            }
+            saveStateToStorage();
+            updateStatsUI();
+        }
+
+        // 3. QUESTIONS INCREMENTER
+        function adjustQuestions(amount) {
+            appState.todaySolved = Math.max(0, appState.todaySolved + amount);
+            appState.totalSolved = Math.max(0, appState.totalSolved + amount);
+            
+            // If they solved questions today, ensure streak is active
+            if (appState.todaySolved > 0 && appState.streakCount === 0) {
+                appState.streakCount = 1;
+            }
+            
+            saveStateToStorage();
+            updateStatsUI();
+        }
+
+        // 4. FOCUS SPRINT TIMER
+        const timerRing = document.getElementById('timer-ring');
+        const timerNumbers = document.getElementById('time-left');
+        const btnTimerStartPause = document.getElementById('btn-timer-start-pause');
+        const btnTimerReset = document.getElementById('btn-timer-reset');
+        const timerStatusTag = document.getElementById('timer-status-tag');
+        const scratchpadTag = document.getElementById('scratchpad-tag');
+        const scratchpadStatus = document.getElementById('scratchpad-status');
+        const timerSettingsPanel = document.getElementById('timer-settings-panel');
+
+        function setupTimerPresetButtons() {
+            const presetBtns = document.querySelectorAll('.preset-btn');
+            presetBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (isTimerRunning) return; // Prevent changing preset during active sprint
+                    
+                    presetBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    const timeMins = parseInt(btn.getAttribute('data-time'), 10);
+                    activeSubject = btn.getAttribute('data-subject');
+                    
+                    timeRemaining = timeMins * 60;
+                    timerDuration = timeRemaining;
+                    timeRemainingBeforeStart = timeRemaining;
+                    startTime = null;
+                    
+                    document.getElementById('current-subject-label').textContent = activeSubject;
+                    updateTimerDisplay();
+                });
+            });
+
+            btnTimerStartPause.addEventListener('click', toggleTimer);
+            btnTimerReset.addEventListener('click', abandonTimer);
+        }
+
+        function toggleTimerSettings() {
+            if (isTimerRunning) {
+                alert("Cannot modify timer settings during an active sprint!");
+                return;
+            }
+            timerSettingsPanel.classList.toggle('active');
+        }
+
+        function applyCustomTimerSettings() {
+            const minsInput = document.getElementById('custom-timer-duration');
+            const subjectInput = document.getElementById('custom-timer-subject');
+            
+            let mins = parseInt(minsInput.value, 10);
+            if (isNaN(mins) || mins < 1) mins = 1;
+            if (mins > 180) mins = 180;
+            minsInput.value = mins;
+            
+            let subject = subjectInput.value.trim();
+            if (!subject) subject = "Custom Task";
+            
+            // Remove active status from presets
+            const presetBtns = document.querySelectorAll('.preset-btn');
+            presetBtns.forEach(b => b.classList.remove('active'));
+            
+            // Apply custom timer
+            activeSubject = subject;
+            timeRemaining = mins * 60;
+            timerDuration = timeRemaining;
+            timeRemainingBeforeStart = timeRemaining;
+            startTime = null;
+            
+            document.getElementById('current-subject-label').textContent = activeSubject;
+            updateTimerDisplay();
+            
+            // Close panel
+            timerSettingsPanel.classList.remove('active');
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            timerNumbers.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Update circular progress SVG
+            // Circumference of our r=110 circle is ~691.15
+            const circumference = 691.15;
+            const progress = timeRemaining / timerDuration;
+            const strokeDashoffset = circumference * (1 - progress);
+            timerRing.style.strokeDashoffset = strokeDashoffset;
+            
+            // Dynamic color shift based on countdown danger
+            if (progress <= 0.15) {
+                timerRing.style.stroke = "var(--accent-danger)";
+            } else if (progress <= 0.5) {
+                timerRing.style.stroke = "var(--accent-gold)";
+            } else {
+                timerRing.style.stroke = "var(--accent-cyan)";
+            }
+        }
+
+        function toggleTimer() {
+            if (isTimerRunning) {
+                // PAUSE IMPLEMENTATION
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                btnTimerStartPause.textContent = "RESUME SPRINT";
+                timerStatusTag.textContent = "PAUSED";
+                timerStatusTag.style.background = "var(--accent-gold)";
+                timerStatusTag.style.color = "black";
+            } else {
+                // START IMPLEMENTATION
+                isTimerRunning = true;
+                startTime = Date.now();
+                timeRemainingBeforeStart = timeRemaining;
+                
+                btnTimerStartPause.textContent = "PAUSE SPRINT";
+                timerStatusTag.textContent = "RUNNING";
+                timerStatusTag.style.background = "var(--accent-cyan)";
+                timerStatusTag.style.color = "black";
+                
+                // Close settings panel if open
+                timerSettingsPanel.classList.remove('active');
+                
+                // Update scratchpad status to active lock
+                scratchpadTag.textContent = "LOCKED";
+                scratchpadTag.style.background = "var(--accent-danger)";
+                scratchpadTag.style.color = "white";
+                scratchpadStatus.textContent = "Locked";
+                scratchpadStatus.className = "status-badge";
+                
+                // Re-render distraction list elements locked down
+                renderDistractionList(true);
+                
+                timerInterval = setInterval(() => {
+                    const elapsedMs = Date.now() - startTime;
+                    const elapsedSeconds = Math.floor(elapsedMs / 1000);
+                    
+                    timeRemaining = Math.max(0, timeRemainingBeforeStart - elapsedSeconds);
+                    updateTimerDisplay();
+                    
+                    if (timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        completeFocusSprint();
+                    }
+                }, 250); // 250ms tick for high responsive sync
+            }
+        }
+
+        function abandonTimer() {
+            if (!isTimerRunning && timeRemaining === timerDuration) return;
+            
+            if (confirm("Are you sure you want to abandon this sprint? Your Goggins Cookie Jar will remember this cowardice!")) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                timeRemaining = timerDuration;
+                timeRemainingBeforeStart = timerDuration;
+                startTime = null;
+                
+                btnTimerStartPause.textContent = "START SPRINT";
+                timerStatusTag.textContent = "READY";
+                timerStatusTag.style.background = "var(--border-glow)";
+                timerStatusTag.style.color = "var(--color-text-muted)";
+                
+                scratchpadTag.textContent = "NO ACTIVE SPRINT";
+                scratchpadTag.style.background = "var(--border-glow)";
+                scratchpadStatus.textContent = "Unlocked";
+                scratchpadStatus.className = "status-badge unlocked";
+                
+                updateTimerDisplay();
+                renderDistractionList(false);
+            }
+        }
+
+        function completeFocusSprint() {
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+            timeRemaining = timerDuration;
+            timeRemainingBeforeStart = timerDuration;
+            startTime = null;
+            
+            // Play notification sound
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } catch (e) {
+                console.log("Audio not supported or blocked");
+            }
+            
+            // Adjust questions completed count as victory
+            adjustQuestions(5);
+            
+            // Dynamic check timeline blocks based on completed subject
+            if (activeSubject === "Reasoning" || activeSubject === "English") {
+                toggleBlock(document.querySelectorAll('.timeline-block')[0], 'block-morning');
+            } else if (activeSubject === "Quantitative Aptitude") {
+                toggleBlock(document.querySelectorAll('.timeline-block')[1], 'block-afternoon');
+            } else if (activeSubject === "General Awareness") {
+                toggleBlock(document.querySelectorAll('.timeline-block')[2], 'block-evening');
+            }
+            
+            // Update habits streak
+            appState.streakCount = Math.max(1, appState.streakCount + 1);
+            saveStateToStorage();
+            updateStatsUI();
+
+            // Display celebration visual overlay
+            const congratsCard = document.getElementById('congrats-card');
+            document.getElementById('congrats-msg').textContent = `You conquered 15 minutes of pure ${activeSubject} focus! +5 PYQ Credit.`;
+            congratsCard.classList.add('active');
+            
+            setTimeout(() => {
+                congratsCard.classList.remove('active');
+            }, 3500);
+
+            // Unlock scratchpad
+            scratchpadTag.textContent = "UNLOCKED";
+            scratchpadTag.style.background = "var(--accent-success)";
+            scratchpadStatus.textContent = "Unlocked";
+            scratchpadStatus.className = "status-badge unlocked";
+            
+            btnTimerStartPause.textContent = "START SPRINT";
+            timerStatusTag.textContent = "READY";
+            timerStatusTag.style.background = "var(--border-glow)";
+            
+            updateTimerDisplay();
+            renderDistractionList(false);
+        }
+
+        // 5. ACTIVE SCRATCHPAD (DISTRACTION LOCK)
+        const scratchpadInput = document.getElementById('scratchpad-input');
+        const distractionListItems = document.getElementById('distraction-list-items');
+        const distractionPlaceholder = document.getElementById('distraction-placeholder');
+
+        function handleScratchpadKey(e) {
+            if (e.key === 'Enter') {
+                captureDistraction();
+            }
+        }
+
+        function captureDistraction() {
+            const content = scratchpadInput.value.trim();
+            if (!content) return;
+            
+            appState.distractionsList.push(content);
+            saveStateToStorage();
+            
+            scratchpadInput.value = "";
+            renderDistractionList(isTimerRunning);
+            
+            // Subtle flash animation input border
+            scratchpadInput.style.borderColor = "var(--accent-success)";
+            setTimeout(() => {
+                scratchpadInput.style.borderColor = "var(--border-glow)";
+            }, 500);
+        }
+
+        function renderDistractionList(forceLocked = false) {
+            distractionListItems.innerHTML = "";
+            
+            if (appState.distractionsList.length === 0) {
+                distractionPlaceholder.style.display = "flex";
+                return;
+            } else {
+                distractionPlaceholder.style.display = "none";
+            }
+            
+            appState.distractionsList.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = `distraction-item ${forceLocked ? 'locked' : ''}`;
+                
+                const span = document.createElement('span');
+                span.textContent = item;
+                li.appendChild(span);
+                
+                if (!forceLocked) {
+                    const btn = document.createElement('button');
+                    btn.className = "clear-item-btn";
+                    btn.innerHTML = "&times;";
+                    btn.onclick = () => removeDistraction(index);
+                    li.appendChild(btn);
+                }
+                
+                distractionListItems.appendChild(li);
+            });
+        }
+
+        function removeDistraction(index) {
+            appState.distractionsList.splice(index, 1);
+            saveStateToStorage();
+            renderDistractionList(isTimerRunning);
+        }
+
+        // 6. GOGGINS COOKIE JAR & RECORDS LIST MANAGER
+        const cookieModal = document.getElementById('cookie-modal');
+        const gogginsQuote = document.getElementById('goggins-quote');
+        const victoryText = document.getElementById('victory-text');
+        
+        const addVictoryModal = document.getElementById('add-victory-modal');
+        const inputVictoryDesc = document.getElementById('input-victory-desc');
+        const victoryManagerListItems = document.getElementById('victory-manager-list-items');
+
+        function openCookieJar() {
+            if (appState.cookieJarVictories.length === 0) {
+                alert("Your Cookie Jar is currently empty! Win a hard battle and write down a victory first.");
+                return;
+            }
+            
+            const randomQuote = GOGGINS_QUOTES[Math.floor(Math.random() * GOGGINS_QUOTES.length)];
+            const randomVictory = appState.cookieJarVictories[Math.floor(Math.random() * appState.cookieJarVictories.length)];
+            
+            gogginsQuote.textContent = randomQuote;
+            victoryText.textContent = randomVictory;
+            
+            cookieModal.classList.add('active');
+            
+            // Trigger browser scale confetti trigger
+            try {
+                confettiEffect();
+            } catch (e) {}
+        }
+
+        function closeCookieModal() {
+            cookieModal.classList.remove('active');
+        }
+
+        function openAddVictoryModal() {
+            addVictoryModal.classList.add('active');
+            inputVictoryDesc.focus();
+        }
+
+        function closeAddVictoryModal() {
+            addVictoryModal.classList.remove('active');
+            inputVictoryDesc.value = "";
+        }
+
+        function saveNewVictory() {
+            const desc = inputVictoryDesc.value.trim();
+            if (!desc) return;
+            
+            appState.cookieJarVictories.push(desc);
+            saveStateToStorage();
+            closeAddVictoryModal();
+            renderVictoryManagerList();
+            updateStatsUI();
+            
+            alert("Victory locked in the Cookie Jar. It will carry you through tough battles.");
+        }
+
+        function renderVictoryManagerList() {
+            victoryManagerListItems.innerHTML = "";
+            
+            if (appState.cookieJarVictories.length === 0) {
+                const emptyLi = document.createElement('li');
+                emptyLi.style.textAlign = "center";
+                emptyLi.style.fontSize = "0.8rem";
+                emptyLi.style.color = "var(--color-text-muted)";
+                emptyLi.style.padding = "1rem 0";
+                emptyLi.textContent = "No battles won yet. Record one below!";
+                victoryManagerListItems.appendChild(emptyLi);
+                return;
+            }
+            
+            appState.cookieJarVictories.forEach((victory, index) => {
+                const li = document.createElement('li');
+                li.className = "victory-manager-item";
+                
+                const span = document.createElement('span');
+                span.textContent = victory;
+                span.title = victory;
+                
+                const btn = document.createElement('button');
+                btn.className = "delete-victory-btn";
+                btn.innerHTML = "&times;";
+                btn.title = "Delete victory";
+                btn.onclick = () => deleteVictory(index);
+                
+                li.appendChild(span);
+                li.appendChild(btn);
+                victoryManagerListItems.appendChild(li);
+            });
+        }
+
+        function deleteVictory(index) {
+            if (confirm(`Remove this victory from your Cookie Jar?`)) {
+                appState.cookieJarVictories.splice(index, 1);
+                saveStateToStorage();
+                renderVictoryManagerList();
+                updateStatsUI();
+            }
+        }
+
+        // Simple visual shake alert confetti
+        function confettiEffect() {
+            const card = document.querySelector('.cookie-victory-card');
+            card.style.transform = "scale(1.05) rotate(1deg)";
+            setTimeout(() => {
+                card.style.transform = "scale(1) rotate(0deg)";
+            }, 300);
+        }
+
+        // 7. CGL NESTED SYLLABUS ACCORDION CHECKLIST
+        const syllabusItemsList = document.getElementById('syllabus-items-list');
+        const syllabusSearchInput = document.getElementById('syllabus-search-input');
+
+        function initTabs() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // Clear search input on tab switch to restore focused browsing context
+                    syllabusSearchInput.value = "";
+                });
+            });
+        }
+
+        function switchSyllabusTab(tabName) {
+            activeSyllabusTab = tabName;
+            renderSyllabus();
+        }
+
+        function renderSyllabus() {
+            syllabusItemsList.innerHTML = "";
+            const searchQuery = syllabusSearchInput.value.toLowerCase().trim();
+            
+            let matchedAccordionCount = 0;
+            
+            // GLOBAL SEARCH MODE: Search across all subjects if a search query is active
+            if (searchQuery) {
+                for (const [subjectKey, subjectData] of Object.entries(SYLLABUS_DATA)) {
+                    for (const [topicName, subtopics] of Object.entries(subjectData)) {
+                        const matchesTopic = topicName.toLowerCase().includes(searchQuery);
+                        const matchingSubtopics = subtopics.filter(sub => sub.toLowerCase().includes(searchQuery));
+                        
+                        if (!matchesTopic && matchingSubtopics.length === 0) {
+                            continue; // Skip if no matches in this topic or subtopics
+                        }
+                        
+                        matchedAccordionCount++;
+                        
+                        // Calculate completion metrics
+                        let completedCount = 0;
+                        subtopics.forEach(sub => {
+                            const uniqueId = `${subjectKey}::${topicName}::${sub}`;
+                            if (appState.completedSyllabusItems.includes(uniqueId)) {
+                                completedCount++;
+                            }
+                        });
+                        
+                        const totalCount = subtopics.length;
+                        const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+                        const allCompleted = totalCount > 0 && completedCount === totalCount;
+                        
+                        // Create Accordion Container
+                        const accordionItem = document.createElement('div');
+                        accordionItem.className = "accordion-item expanded active-filter";
+                        
+                        // Create Accordion Header
+                        const accordionHeader = document.createElement('div');
+                        accordionHeader.className = "accordion-header";
+                        accordionHeader.onclick = (e) => {
+                            if (e.target.tagName === 'INPUT' || e.target.closest('.subtopic-item') || e.target.closest('.parent-checkbox-container')) return;
+                            accordionItem.classList.toggle('expanded');
+                        };
+
+                        // Create Parent Checkbox
+                        const parentCheckboxContainer = document.createElement('div');
+                        parentCheckboxContainer.className = "parent-checkbox-container";
+                        parentCheckboxContainer.onclick = (e) => toggleParentTopic(e, subjectKey, topicName, subtopics);
+                        
+                        const parentCheckbox = document.createElement('div');
+                        parentCheckbox.className = `parent-checkbox ${allCompleted ? 'completed' : ''}`;
+                        parentCheckboxContainer.appendChild(parentCheckbox);
+                        
+                        const headerLeft = document.createElement('div');
+                        headerLeft.className = "accordion-header-left";
+                        
+                        const titleSpan = document.createElement('span');
+                        titleSpan.className = "accordion-topic-title";
+                        
+                        // Human readable subject label
+                        let subLabel = subjectKey === 'Quantitative Aptitude' ? 'Math' : (subjectKey === 'General Awareness' ? 'GA' : subjectKey);
+                        titleSpan.innerHTML = `<span style="color: var(--accent-cyan); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; background: hsla(180, 100%, 50%, 0.1); padding: 2px 6px; border-radius: 4px; margin-right: 8px;">${subLabel}</span> ${topicName}`;
+                        
+                        // Progress Bar Container
+                        const progressRow = document.createElement('div');
+                        progressRow.className = "accordion-progress-row";
+                        
+                        const barBg = document.createElement('div');
+                        barBg.className = "accordion-progress-bar-bg";
+                        
+                        const barFill = document.createElement('div');
+                        barFill.className = "accordion-progress-bar-fill";
+                        barFill.style.width = `${percent}%`;
+                        
+                        const progressText = document.createElement('span');
+                        progressText.className = "accordion-progress-text";
+                        progressText.textContent = `${completedCount}/${totalCount} (${percent}%)`;
+                        
+                        barBg.appendChild(barFill);
+                        progressRow.appendChild(barBg);
+                        progressRow.appendChild(progressText);
+                        
+                        headerLeft.appendChild(titleSpan);
+                        headerLeft.appendChild(progressRow);
+                        
+                        const chevronSpan = document.createElement('span');
+                        chevronSpan.className = "accordion-chevron";
+                        chevronSpan.textContent = "▼";
+                        
+                        accordionHeader.appendChild(parentCheckboxContainer);
+                        accordionHeader.appendChild(headerLeft);
+                        accordionHeader.appendChild(chevronSpan);
+                        
+                        // Create Accordion Content Panel
+                        const accordionContent = document.createElement('div');
+                        accordionContent.className = "accordion-content";
+                        
+                        const subList = document.createElement('ul');
+                        subList.className = "subtopic-list";
+                        
+                        subtopics.forEach(sub => {
+                            if (!matchesTopic && !sub.toLowerCase().includes(searchQuery)) {
+                                return; // Skip non-matching subtopic in search mode
+                            }
+                            
+                            const uniqueId = `${subjectKey}::${topicName}::${sub}`;
+                            const isSubCompleted = appState.completedSyllabusItems.includes(uniqueId);
+                            
+                            const subLi = document.createElement('li');
+                            subLi.className = `subtopic-item ${isSubCompleted ? 'completed' : ''}`;
+                            subLi.onclick = () => toggleSubtopic(uniqueId, accordionItem, barFill, progressText, topicName, subtopics, subjectKey);
+                            
+                            const subCheckbox = document.createElement('div');
+                            subCheckbox.className = "subtopic-checkbox";
+                            
+                            const subText = document.createElement('span');
+                            subText.className = "subtopic-text";
+                            subText.textContent = sub;
+                            
+                            subLi.appendChild(subCheckbox);
+                            subLi.appendChild(subText);
+                            subList.appendChild(subLi);
+                        });
+                        
+                        accordionContent.appendChild(subList);
+                        accordionItem.appendChild(accordionHeader);
+                        accordionItem.appendChild(accordionContent);
+                        syllabusItemsList.appendChild(accordionItem);
+                    }
+                }
+            } else {
+                // STANDARD TABBED VIEW (NO ACTIVE SEARCH QUERY)
+                const subjectData = SYLLABUS_DATA[activeSyllabusTab];
+                
+                for (const [topicName, subtopics] of Object.entries(subjectData)) {
+                    matchedAccordionCount++;
+                    
+                    // Calculate completion metrics
+                    let completedCount = 0;
+                    subtopics.forEach(sub => {
+                        const uniqueId = `${activeSyllabusTab}::${topicName}::${sub}`;
+                        if (appState.completedSyllabusItems.includes(uniqueId)) {
+                            completedCount++;
+                        }
+                    });
+                    
+                    const totalCount = subtopics.length;
+                    const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+                    const allCompleted = totalCount > 0 && completedCount === totalCount;
+                    
+                    // Create Accordion Container
+                    const accordionItem = document.createElement('div');
+                    accordionItem.className = "accordion-item";
+                    
+                    // Create Accordion Header
+                    const accordionHeader = document.createElement('div');
+                    accordionHeader.className = "accordion-header";
+                    accordionHeader.onclick = (e) => {
+                        if (e.target.tagName === 'INPUT' || e.target.closest('.subtopic-item') || e.target.closest('.parent-checkbox-container')) return;
+                        accordionItem.classList.toggle('expanded');
+                    };
+                    
+                    // Create Parent Checkbox
+                    const parentCheckboxContainer = document.createElement('div');
+                    parentCheckboxContainer.className = "parent-checkbox-container";
+                    parentCheckboxContainer.onclick = (e) => toggleParentTopic(e, activeSyllabusTab, topicName, subtopics);
+                    
+                    const parentCheckbox = document.createElement('div');
+                    parentCheckbox.className = `parent-checkbox ${allCompleted ? 'completed' : ''}`;
+                    parentCheckboxContainer.appendChild(parentCheckbox);
+                    
+                    const headerLeft = document.createElement('div');
+                    headerLeft.className = "accordion-header-left";
+                    
+                    const titleSpan = document.createElement('span');
+                    titleSpan.className = "accordion-topic-title";
+                    titleSpan.textContent = topicName;
+                    
+                    // Progress Bar Container
+                    const progressRow = document.createElement('div');
+                    progressRow.className = "accordion-progress-row";
+                    
+                    const barBg = document.createElement('div');
+                    barBg.className = "accordion-progress-bar-bg";
+                    
+                    const barFill = document.createElement('div');
+                    barFill.className = "accordion-progress-bar-fill";
+                    barFill.style.width = `${percent}%`;
+                    
+                    const progressText = document.createElement('span');
+                    progressText.className = "accordion-progress-text";
+                    progressText.textContent = `${completedCount}/${totalCount} (${percent}%)`;
+                    
+                    barBg.appendChild(barFill);
+                    progressRow.appendChild(barBg);
+                    progressRow.appendChild(progressText);
+                    
+                    headerLeft.appendChild(titleSpan);
+                    headerLeft.appendChild(progressRow);
+                    
+                    const chevronSpan = document.createElement('span');
+                    chevronSpan.className = "accordion-chevron";
+                    chevronSpan.textContent = "▼";
+                    
+                    accordionHeader.appendChild(parentCheckboxContainer);
+                    accordionHeader.appendChild(headerLeft);
+                    accordionHeader.appendChild(chevronSpan);
+                    
+                    // Create Accordion Content Panel
+                    const accordionContent = document.createElement('div');
+                    accordionContent.className = "accordion-content";
+                    
+                    const subList = document.createElement('ul');
+                    subList.className = "subtopic-list";
+                    
+                    subtopics.forEach(sub => {
+                        const uniqueId = `${activeSyllabusTab}::${topicName}::${sub}`;
+                        const isSubCompleted = appState.completedSyllabusItems.includes(uniqueId);
+                        
+                        const subLi = document.createElement('li');
+                        subLi.className = `subtopic-item ${isSubCompleted ? 'completed' : ''}`;
+                        subLi.onclick = () => toggleSubtopic(uniqueId, accordionItem, barFill, progressText, topicName, subtopics, activeSyllabusTab);
+                        
+                        const subCheckbox = document.createElement('div');
+                        subCheckbox.className = "subtopic-checkbox";
+                        
+                        const subText = document.createElement('span');
+                        subText.className = "subtopic-text";
+                        subText.textContent = sub;
+                        
+                        subLi.appendChild(subCheckbox);
+                        subLi.appendChild(subText);
+                        subList.appendChild(subLi);
+                    });
+                    
+                    accordionContent.appendChild(subList);
+                    accordionItem.appendChild(accordionHeader);
+                    accordionItem.appendChild(accordionContent);
+                    syllabusItemsList.appendChild(accordionItem);
+                }
+            }
+            
+            if (matchedAccordionCount === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.style.textAlign = "center";
+                emptyMsg.style.color = "var(--color-text-muted)";
+                emptyMsg.style.fontSize = "0.85rem";
+                emptyMsg.style.padding = "2rem 0";
+                emptyMsg.textContent = "No syllabus matches found.";
+                syllabusItemsList.appendChild(emptyMsg);
+            }
+        }
+
+        function toggleParentTopic(e, subjectKey, topicName, subtopics) {
+            e.stopPropagation(); // Stop click event from expanding/collapsing accordion
+            
+            // Check if currently all subtopics are completed
+            let allCompleted = true;
+            subtopics.forEach(sub => {
+                const uniqueId = `${subjectKey}::${topicName}::${sub}`;
+                if (!appState.completedSyllabusItems.includes(uniqueId)) {
+                    allCompleted = false;
+                }
+            });
+            
+            subtopics.forEach(sub => {
+                const uniqueId = `${subjectKey}::${topicName}::${sub}`;
+                const idx = appState.completedSyllabusItems.indexOf(uniqueId);
+                
+                if (allCompleted) {
+                    // Remove all children from record (uncheck)
+                    if (idx !== -1) {
+                        appState.completedSyllabusItems.splice(idx, 1);
+                    }
+                } else {
+                    // Add all children to record (check)
+                    if (idx === -1) {
+                        appState.completedSyllabusItems.push(uniqueId);
+                    }
+                }
+            });
+            
+            saveStateToStorage();
+            renderSyllabus();
+        }
+
+        function toggleSubtopic(uniqueId, accordionElement, barFillElement, progressTextElement, topicName, subtopics, subjectKey) {
+            const idx = appState.completedSyllabusItems.indexOf(uniqueId);
+            if (idx === -1) {
+                appState.completedSyllabusItems.push(uniqueId);
+            } else {
+                appState.completedSyllabusItems.splice(idx, 1);
+            }
+            saveStateToStorage();
+            
+            // Recalculate local accordion metrics without full redraw (smooth transition)
+            let localCompleted = 0;
+            subtopics.forEach(sub => {
+                const uid = `${subjectKey}::${topicName}::${sub}`;
+                if (appState.completedSyllabusItems.includes(uid)) {
+                    localCompleted++;
+                }
+            });
+            const total = subtopics.length;
+            const pct = Math.round((localCompleted / total) * 100);
+            
+            barFillElement.style.width = `${pct}%`;
+            progressTextElement.textContent = `${localCompleted}/${total} (${pct}%)`;
+            
+            // Redraw complete list slightly delayed for visual consistency on completion classes
+            setTimeout(() => {
+                renderSyllabus();
+            }, 100);
+        }
+
+        function filterSyllabus() {
+            renderSyllabus();
+        }
+    </script>
+</body>
+</html>
