@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premium Portfolio Showcase Reel</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cyan: #00D4E8;
+    --gold: #C9A84C;
+    --purple: #8B5CF6;
+    --border: rgba(255, 255, 255, 0.08);
+  }
+
+  body {
+    background: #05070f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+    overflow: hidden;
+  }
+
+  /* ── STAGE VIEWPORT (16:9 Widescreen) ── */
+  #stage {
+    width: 960px;
+    height: 540px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    transform-origin: center center;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 50px 150px rgba(0,0,0,0.95);
+    background: #000;
+  }
+
+  /* ── BACKGROUND GLOWS ── */
+  .glow-bg {
+    position: absolute; inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .glow-1 {
+    position: absolute; width: 450px; height: 450px;
+    background: radial-gradient(circle, rgba(0, 212, 232, 0.05), transparent 70%);
+    top: -150px; left: -150px;
+  }
+  .glow-2 {
+    position: absolute; width: 450px; height: 450px;
+    background: radial-gradient(circle, rgba(201, 168, 76, 0.05), transparent 70%);
+    bottom: -150px; right: -150px;
+  }
+
+  /* ── SLIDE FRAME ── */
+  .slide-container {
+    position: absolute;
+    inset: 0px;
+    z-index: 2;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.8s ease-in-out;
+    background: #000;
+  }
+  .slide.active { opacity: 1; z-index: 2; }
+
+  /* ── SLIDE IMAGES (HIGH-END CONTINUOUS DRIFT AND ZOOM EFFECT) ── */
+  .slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transform: scale(1.02) translate(0, 0);
+  }
+  
+  /* Apply continuous cinematic pan-and-zoom motion when the slide is active */
+  .slide.active img {
+    animation: cinematicDrift 4s ease-out forwards;
+  }
+
+  @keyframes cinematicDrift {
+    0% {
+      transform: scale(1.03) translate(-8px, -4px);
+    }
+    100% {
+      transform: scale(1.09) translate(8px, 4px);
+    }
+  }
+
+  /* ── PROGRESS BAR ── */
+  #progress-bar {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--cyan), var(--gold));
+    width: 0%;
+    z-index: 100;
+    transition: width linear;
+  }
+
+  /* ── PLAY OVERLAY ── */
+  #play-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(6, 9, 19, 0.98);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    cursor: pointer;
+    transition: opacity 0.5s;
+  }
+  #play-overlay:hover .play-btn { transform: scale(1.1); box-shadow: 0 0 45px rgba(0,212,232,0.35); }
+  .play-btn {
+    width: 84px; height: 84px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-bottom: 24px;
+    box-shadow: 0 0 20px rgba(0,212,232,0.15);
+  }
+  .play-btn svg { margin-left: 6px; }
+  #play-overlay h3 {
+    color: white;
+    font-size: 26px;
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  #play-overlay p {
+    color: rgba(255,255,255,0.4);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* ── TEXT OVERLAYS ── */
+  .caption {
+    position: absolute;
+    bottom: 40px; left: 40px;
+    z-index: 50;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.6s 0.4s ease-out, transform 0.6s 0.4s ease-out;
+  }
+  .slide.active .caption {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .caption span {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(201, 168, 76, 0.15);
+    border: 1px solid rgba(201, 168, 76, 0.3);
+    color: var(--gold);
+    font-size: 10px;
+    margin-right: 12px;
+    vertical-align: middle;
+  }
+  .slide.active[data-type="coffee"] .caption span {
+    background: rgba(0, 212, 232, 0.15);
+    border-color: rgba(0, 212, 232, 0.3);
+    color: var(--cyan);
+  }
+  .slide.active[data-type="focus"] .caption span {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: var(--purple);
+  }
+
+  /* ── HIDE CONTROLS (Prevents mouse hover overlap in screen recordings) ── */
+  #controls {
+    display: none;
+  }
+
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <!-- GLOW EFFECTS -->
+  <div class="glow-bg">
+    <div class="glow-1"></div>
+    <div class="glow-2"></div>
+  </div>
+
+  <div id="progress-bar"></div>
+
+  <!-- AUDIO ELEMENT (Optional - name your audio music.mp3 in the directory) -->
+  <audio id="bg-music" loop>
+    <source src="music.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- PLAY OVERLAY -->
+  <div id="play-overlay">
+    <div class="play-btn">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><polygon points="7,4 19,12 7,20"/></svg>
+    </div>
+    <h3>BTwary Designs</h3>
+    <p>Play Premium Portfolio Reel</p>
+  </div>
+
+  <!-- ─── SLIDES CONTAINER ─── -->
+  <div class="slide-container">
+    
+    <!-- 💎 FINORA STYLE (Slides 1 - 7) (Using uppercase .PNG to match case-sensitive Linux servers!) -->
+    <div class="slide active" data-type="finora">
+      <img src="finora1.PNG" alt="Finora Cover" onerror="imgError(this, 'Finora - Slide 1 (Cover)')">
+      <div class="caption"><span>FINORA AESTHETIC</span>Smart Decisions. Stronger Futures.</div>
+    </div>
+
+    <div class="slide" data-type="finora">
+      <img src="finora2.PNG" alt="Finora Slide 2" onerror="imgError(this, 'Finora - Slide 2')">
+      <div class="caption"><span>FINORA AESTHETIC</span>Bespoke Wealth Management Solutions</div>
+    </div>
+
+    <div class="slide" data-type="finora">
+      <img src="finora3.PNG" alt="Finora Slide 3" onerror="imgError(this, 'Finora - Slide 3')">
+      <div class="caption"><span>FINORA AESTHETIC</span>Bespoke Venture Capital Structure</div>
+    </div>
+
+    <div class="slide" data-type="finora">
+      <img src="finora4.PNG" alt="Finora Slide 4" onerror="imgError(this, 'Finora - Slide 4')">
+      <div class="caption"><span>FINORA AESTHETIC</span>Clean Data Analytics Dashboard</div>
+    </div>
+
+    <div class="slide" data-type="finora">
+      <img src="finora5.PNG" alt="Finora Slide 5" onerror="imgError(this, 'Finora - Slide 5')">
+      <div class="caption"><span>FINORA AESTHETIC</span>Seamless Information Grid Architecture</div>
+    </div>
+
+    <div class="slide" data-type="finora">
+      <img src="finora6.PNG" alt="Finora Slide 6" onerror="imgError(this, 'Finora - Slide 6')">
+      <div class="caption"><span>FINORA AESTHETIC</span>Premium Glassmorphic Typography Cards</div>
+    </div>
+
+    <div class="slide" data-type="finora">
+      <img src="finora7.PNG" alt="Finora Slide 7" onerror="imgError(this, 'Finora - Slide 7')">
+      <div class="caption"><span>FINORA AESTHETIC</span>Strategic Risk Planning Framework</div>
+    </div>
+
+    <!-- ☕ COFFEE RESEARCH STYLE (Slides 8 - 12) -->
+    <div class="slide" data-type="coffee">
+      <img src="coffee1.PNG" alt="Coffee Cover" onerror="imgError(this, 'Coffee - Slide 1 (Cover)')">
+      <div class="caption"><span>COFFEE RESEARCH</span>Inspire. Discover. Brew.</div>
+    </div>
+
+    <div class="slide" data-type="coffee">
+      <img src="coffee2.PNG" alt="Coffee Slide 2" onerror="imgError(this, 'Coffee - Slide 2')">
+      <div class="caption"><span>COFFEE RESEARCH</span>Organic Editorial Design Layouts</div>
+    </div>
+
+    <div class="slide" data-type="coffee">
+      <img src="coffee3.PNG" alt="Coffee Slide 3" onerror="imgError(this, 'Coffee - Slide 3')">
+      <div class="caption"><span>COFFEE RESEARCH</span>Minimalist Process Mapping</div>
+    </div>
+
+    <div class="slide" data-type="coffee">
+      <img src="coffee4.PNG" alt="Coffee Slide 4" onerror="imgError(this, 'Coffee - Slide 4')">
+      <div class="caption"><span>COFFEE RESEARCH</span>Precision Sustainability Data</div>
+    </div>
+
+    <div class="slide" data-type="coffee">
+      <img src="coffee5.PNG" alt="Coffee Slide 5" onerror="imgError(this, 'Coffee - Slide 5')">
+      <div class="caption"><span>COFFEE RESEARCH</span>Refined Brand Editorial Guidelines</div>
+    </div>
+
+    <!-- 🧠 FOCUSCGL STYLE (Slides 13 - 17) -->
+    <div class="slide" data-type="focus">
+      <img src="focus1.PNG" alt="FocusCGL Cover" onerror="imgError(this, 'FocusCGL - Slide 1 (Cover)')">
+      <div class="caption"><span>FOCUSCGL EDTECH</span>Re-Engineering Exam Prep for Distraction</div>
+    </div>
+
+    <div class="slide" data-type="focus">
+      <img src="focus2.PNG" alt="FocusCGL Slide 2" onerror="imgError(this, 'FocusCGL - Slide 2')">
+      <div class="caption"><span>FOCUSCGL EDTECH</span>The Silent Distraction Pandemic Analysis</div>
+    </div>
+
+    <div class="slide" data-type="focus">
+      <img src="focus3.PNG" alt="FocusCGL Slide 3" onerror="imgError(this, 'FocusCGL - Slide 3')">
+      <div class="caption"><span>FOCUSCGL EDTECH</span>Zero-Willpower Dopamine Engineering</div>
+    </div>
+
+    <div class="slide" data-type="focus">
+      <img src="focus4.PNG" alt="FocusCGL Slide 4" onerror="imgError(this, 'FocusCGL - Slide 4')">
+      <div class="caption"><span>FOCUSCGL EDTECH</span>Interactive 15-Minute Sprint Dashboard</div>
+    </div>
+
+    <div class="slide" data-type="focus">
+      <img src="focus5.PNG" alt="FocusCGL Slide 5" onerror="imgError(this, 'FocusCGL - Slide 5')">
+      <div class="caption"><span>FOCUSCGL EDTECH</span>Psychological Triumph Locker & Jar widget</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SLIDES = 17;
+const SLIDE_DURATION = 3000; // 3 seconds per slide (Faster pacing = high momentum showreel!)
+let current = 0;
+let playing = false;
+let timer = null;
+let progressStart = null;
+let progressDuration = 0;
+let progressRAF = null;
+
+const slides = document.querySelectorAll('.slide');
+const progressBar = document.getElementById('progress-bar');
+const playOverlay = document.getElementById('play-overlay');
+const audio = document.getElementById('bg-music');
+
+/* ── AUTO-SCALE VIEWPORT JAVASCRIPT ── */
+function resizeStage() {
+  const stage = document.getElementById('stage');
+  const baseWidth = 960;
+  const baseHeight = 540;
+  const scaleX = window.innerWidth / baseWidth;
+  const scaleY = window.innerHeight / baseHeight;
+  const scale = Math.min(scaleX, scaleY);
+  stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+}
+window.addEventListener('resize', resizeStage);
+window.addEventListener('load', resizeStage);
+
+// Image loading error fallback
+function imgError(image, label) {
+  const container = image.parentElement;
+  image.style.display = 'none';
+  
+  const fallback = document.createElement('div');
+  fallback.style.width = '100%';
+  fallback.style.height = '100%';
+  fallback.style.display = 'flex';
+  fallback.style.flexDirection = 'column';
+  fallback.style.alignItems = 'center';
+  fallback.style.justifyContent = 'center';
+  fallback.style.background = 'linear-gradient(135deg, #0a1128 0%, #101f42 100%)';
+  fallback.style.color = 'white';
+  fallback.style.border = '2px dashed rgba(255,255,255,0.1)';
+  fallback.style.borderRadius = '8px';
+  fallback.style.margin = '20px';
+  
+  fallback.innerHTML = `
+    <div style="font-size: 36px; margin-bottom: 12px;">📁</div>
+    <div style="font-size: 14px; font-weight: 700; color: #E8C97A; font-family: 'Playfair Display', serif;">${label}</div>
+    <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-top: 6px;">Place an image named "${image.getAttribute('src')}" in this directory</div>
+  `;
+  container.insertBefore(fallback, container.firstChild);
+}
+
+function showSlide(idx) {
+  slides.forEach(s => s.classList.remove('active'));
+  
+  // Instantly reset image transitions so they start fresh
+  slides.forEach(s => {
+    const img = s.querySelector('img');
+    if(img) {
+      img.style.animation = 'none';
+      img.offsetHeight; // Trigger reflow to apply the reset
+    }
+  });
+  
+  slides[idx].classList.add('active');
+}
+
+function startProgress(duration) {
+  cancelAnimationFrame(progressRAF);
+  progressBar.style.transition = 'none';
+  progressBar.style.width = '0%';
+  progressBar.offsetHeight;
+  progressStart = performance.now();
+  progressDuration = duration;
+  
+  function tick(now) {
+    const elapsed = now - progressStart;
+    const pct = Math.min(100, (elapsed / progressDuration) * 100);
+    progressBar.style.width = pct + '%';
+    if (pct < 100 && playing) {
+      progressRAF = requestAnimationFrame(tick);
+    }
+  }
+  progressRAF = requestAnimationFrame(tick);
+}
+
+function scheduleNext() {
+  clearTimeout(timer);
+  if (!playing) return;
+  startProgress(SLIDE_DURATION);
+  timer = setTimeout(() => {
+    if (!playing) return;
+    const next = (current + 1) % SLIDES;
+    showSlide(next);
+    current = next;
+    scheduleNext();
+  }, SLIDE_DURATION);
+}
+
+playOverlay.addEventListener('click', () => {
+  playOverlay.style.opacity = '0';
+  playOverlay.style.pointerEvents = 'none';
+  setTimeout(() => playOverlay.style.display = 'none', 500);
+  
+  audio.play().catch(e => console.log('Audio playback blocked'));
+  
+  showSlide(0);
+  playing = true;
+  scheduleNext();
+});
+
+// Initialize
+showSlide(0);
+resizeStage();
+</script>
+</body>
+</html>
